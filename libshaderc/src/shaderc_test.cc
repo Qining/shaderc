@@ -216,6 +216,19 @@ TEST(CompileStringWithOptions, MacroCompileOptions) {
       shaderc_glsl_vertex_shader, cloned_options.get()));
 }
 
+TEST(CompileStringWithOptions, PreprocessingOnlyOption) {
+  Compiler compiler;
+  compile_options_ptr options(shaderc_compile_options_initialize());
+  shaderc_compile_options_set_preprocessing_only_mode(options.get());
+  ASSERT_NE(nullptr, compiler.get_compiler_handle());
+  const std::string kMinimalShader =
+      "#define E main\n"
+      "void E(){}\n";
+  Compilation comp(compiler.get_compiler_handle(), kMinimalShader,shaderc_glsl_vertex_shader, options.get());
+  EXPECT_TRUE(shaderc_module_get_success(comp.result()));
+  EXPECT_THAT(shaderc_module_get_bytes(comp.result()), HasSubstr("void main(){ }"));
+}
+
 TEST(CompileStringWithOptions, IfDefCompileOption) {
   Compiler compiler;
   compile_options_ptr options(shaderc_compile_options_initialize());
